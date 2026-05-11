@@ -258,7 +258,7 @@ class _HomeContentScreenState extends State<HomeContentScreen>
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => PropertyDetailScreen(
-          property: property, // No need to pass propertyId separately
+          property: property, 
         ),
       ),
     );

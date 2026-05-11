@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:faramas/config/app_routes.dart';
 import 'package:faramas/models/user_model.dart';
 import 'package:faramas/providers/favorites_provider.dart';
@@ -18,7 +19,7 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../config/app_colors.dart';
 import '../models/property_model.dart';
-import '../services/property_service.dart';
+// import '../services/property_service.dart';
 import '../providers/auth_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -61,12 +62,16 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   @override
   void initState() {
     super.initState();
+
     _currentProperty = widget.property;
     _loadCurrentUser();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final url in _currentProperty.safeImages) {
+        precacheImage(NetworkImage(url), context);
+      }
+    });
   }
-
-
-
 
   Future<void> _loadCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
@@ -205,109 +210,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     }
   }
 
-  // ignore: unused_element
-  Future<void> _bookProperty() async {
-    debugPrint("Booking started for property: ${_currentProperty.name}");
-
-    if (_currentProperty.isBooked) {
-      _showAnimatedDialog(
-        _currentProperty,
-        type: DialogType.booked,
-        message: 'This property is already secured.',
-      );
-      return;
-    }
-    debugPrint("Airbnb field: ${_currentProperty.airbnb}");
-    if (_currentProperty.airbnb != null) {
-      Navigator.of(context).pushNamed(
-        '/airbnb-booking',
-        arguments: _currentProperty,
-      );
-      return;
-    }
-
-    setState(() => _isBooking = true);
-
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final accessToken = authProvider.accessToken;
-      final user = authProvider.user;
-
-      if (accessToken == null || user == null || user.id == null) {
-        _showAnimatedDialog(
-          _currentProperty,
-          type: DialogType.booked,
-          message: 'Please log in to book this property.',
-        );
-        return;
-      }
-
-      final response = await PropertyService.bookProperty(
-        token: accessToken,
-        propertyId: _currentProperty.id!,
-        userId: user.id!,
-      );
-
-      if (response['payment_required'] == true) {
-        _showAnimatedDialog(
-          _currentProperty,
-          type: DialogType.payment,
-          message: response['message'] ??
-              'To book this property, payment is required. Tap "Pay Now" to proceed.',
-          onAction: () {
-            Navigator.of(context).pop();
-            Navigator.of(context)
-                .pushNamed('/generatePayment', arguments: _currentProperty);
-          },
-        );
-      } else if (response['success'] == true) {
-        _showAnimatedDialog(
-          _currentProperty,
-          type: DialogType.success,
-          message: response['message'] ?? 'Property booked successfully!',
-        );
-      } else {
-        _showAnimatedDialog(
-          _currentProperty,
-          type: DialogType.booked,
-          message: response['message'] ?? 'Booking failed. Please try again.',
-        );
-      }
-    } catch (e) {
-      _showAnimatedDialog(
-        _currentProperty,
-        type: DialogType.payment,
-        message:
-            'Booking failed or payment is required. Tap "Pay Now" to complete booking.',
-        onAction: () {
-          Navigator.of(context).pop();
-          Navigator.of(context)
-              .pushNamed('/generatePayment', arguments: _currentProperty);
-        },
-      );
-    } finally {
-      if (mounted) setState(() => _isBooking = false);
-    }
-  }
-
-  void _showAnimatedDialog(PropertyModel property,
-      {required DialogType type,
-      required String message,
-      VoidCallback? onAction}) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AnimatedPaymentDialog(
-        property: property,
-        message: message,
-        type: type,
-        onAction: onAction,
-      ),
-    );
-  }
-
-  
-
   Widget _buildInfoIcon(IconData icon, String text) {
     return Column(
       children: [
@@ -327,8 +229,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       ],
     );
   }
-
-  
 
   IconData _getFacilityIcon(String facilityName) {
     switch (facilityName.toLowerCase()) {
@@ -396,12 +296,9 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   Widget build(BuildContext context) {
     final property = _currentProperty;
 
-    
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
- 
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -425,158 +322,122 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-  Stack(
-  children: [
-    SizedBox(
-      height: 300,
-      width: double.infinity,
-      child: Builder(
-        builder: (context) {
-          final images = property.safeImages;
-          final videoUrl = property.videoUrl;
-
-          final hasVideo =
-              videoUrl != null && videoUrl.isNotEmpty;
-
-          final totalCount = images.length + (hasVideo ? 1 : 0);
-
-        
-          print("IMAGES LENGTH: ${images.length}");
-          print("IMAGES LIST: $images");
-          print("VIDEO URL: $videoUrl");
-          print("HAS VIDEO: $hasVideo");
-          print("TOTAL PAGE COUNT: $totalCount");
-        
-
-          return PageView.builder(
-            itemCount: totalCount, 
-            onPageChanged: (index) {
-              setState(() {
-                _currentImageIndex = index;
-              });
-
-              print("CURRENT PAGE INDEX: $index");
-            },
-            itemBuilder: (context, index) {
-              print("BUILDING PAGE INDEX: $index");
-
-             
-              if (hasVideo && index == images.length) {
-                print("SHOWING VIDEO AT INDEX: $index");
-
-                return VideoPreviewPlayer(
-                  videoSource: videoUrl!,
-                );
-              }
-
-          
-              if (index < images.length) {
-                final imageUrl = images[index];
-
-                print("SHOWING IMAGE: $imageUrl");
-
-                return Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
+            Stack(
+              children: [
+                SizedBox(
+                  height: 300,
                   width: double.infinity,
-                  loadingBuilder:
-                      (context, child, loadingProgress) {
-                    if (loadingProgress == null) {
-                      print("IMAGE LOADED SUCCESS: $imageUrl");
-                      return child;
-                    }
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    print("IMAGE FAILED: $imageUrl");
-                    print("ERROR: $error");
+                  child: Builder(
+                    builder: (context) {
+                      final images = property.safeImages;
+                      final videoUrl = property.videoUrl;
 
-                    return Image.asset(
-                      'assets/images/placeholder.png',
-                      fit: BoxFit.cover,
-                    );
-                  },
-                );
-              }
+                      final hasVideo = videoUrl != null && videoUrl.isNotEmpty;
+                      final totalCount = images.length + (hasVideo ? 1 : 0);
 
-              
-              return Container(
-                color: Colors.grey[200],
-                child: const Center(
-                  child: Icon(
-                    Icons.image_not_supported,
-                    size: 50,
-                    color: Colors.grey,
+                      return PageView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: totalCount,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentImageIndex = index;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          // VIDEO PAGE
+                          if (hasVideo && index == images.length) {
+                            return VideoPreviewPlayer(
+                              videoSource: videoUrl,
+                            );
+                          }
+
+                          // IMAGE PAGES
+                          if (index < images.length) {
+                            final imageUrl = images[index];
+
+                            return CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                'assets/images/placeholder.png',
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          }
+
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
-    ),
 
-   
-    Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.center,
-            colors: [
-              Colors.black.withOpacity(0.35),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
-    ),
-
-   
-    Positioned(
-      bottom: 16,
-      left: 0,
-      right: 0,
-      child: Builder(
-        builder: (_) {
-          final images = property.safeImages;
-          final videoUrl = property.videoUrl;
-
-          final hasVideo =
-              videoUrl != null && videoUrl.isNotEmpty;
-
-          final totalCount = images.length + (hasVideo ? 1 : 0);
-
-          print("DOT COUNT: $totalCount");
-
-          if (totalCount <= 1) {
-            return const SizedBox(); // hide dots if only 1 item
-          }
-
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(totalCount, (index) {
-              return Container(
-                width: 8,
-                height: 8,
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentImageIndex == index
-                      ? AppColors.primary
-                      : Colors.grey.withOpacity(0.4),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.center,
+                          colors: [
+                            Colors.black.withOpacity(0.35),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              );
-            }),
-          );
-        },
-      ),
-    ),
-  ],
-),
+
+                // DOT INDICATORS
+                Positioned(
+                  bottom: 16,
+                  left: 0,
+                  right: 0,
+                  child: Builder(
+                    builder: (_) {
+                      final images = property.safeImages;
+                      final videoUrl = property.videoUrl;
+
+                      final hasVideo = videoUrl != null && videoUrl.isNotEmpty;
+                      final totalCount = images.length + (hasVideo ? 1 : 0);
+
+                      if (totalCount <= 1) return const SizedBox();
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(totalCount, (index) {
+                          return Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentImageIndex == index
+                                  ? AppColors.primary
+                                  : Colors.grey.withOpacity(0.4),
+                            ),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
             Container(
               color: AppColors.background,
               padding: const EdgeInsets.all(16),

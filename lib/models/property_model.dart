@@ -16,8 +16,7 @@ class PropertyModel {
   final double price;
   final String? imageUrl;
   final List<String> images;
-  final String? videoBase64;
-  String? get videoUrl => videoBase64;
+  final String? videoUrl;
   final bool isRent;
   final bool isBroker;
   final String? category;
@@ -48,7 +47,7 @@ class PropertyModel {
     required this.price,
     this.imageUrl,
     this.images = const [],
-    this.videoBase64,
+    this.videoUrl,
     required this.isRent,
     this.isBroker = false,
     this.category,
@@ -94,21 +93,15 @@ class PropertyModel {
       images: (() {
         final list = <String>[];
 
-        final primary = json['image_url']?.toString().trim();
-        if (primary != null && primary.isNotEmpty) {
-          list.add(primary);
-        }
-
-        final extra = json['images'];
+        final extra = json['image_list'];
 
         if (extra is List) {
-          for (final x in extra) {
-            if (x is String && x.isNotEmpty) {
-              list.add(x);
-            } else if (x is Map) {
-              final url = x['image_url'] ?? x['url'] ?? x['path'];
-              if (url != null && url.toString().isNotEmpty) {
-                list.add(url.toString());
+          for (final item in extra) {
+            if (item is Map<String, dynamic>) {
+              final url = item['image_url']?.toString().trim();
+
+              if (url != null && url.isNotEmpty) {
+                list.add(url);
               }
             }
           }
@@ -116,7 +109,7 @@ class PropertyModel {
 
         return list;
       })(),
-      videoBase64: json['video_base64'],
+      videoUrl: json['video_url'] ?? json['video'],
       isRent: json['is_rent'] ?? false,
       isBroker: json['is_broker'] ?? false,
       description: json['description'] ?? '',
@@ -152,7 +145,7 @@ class PropertyModel {
       'price': price,
       if (imageUrl != null) 'image_url': imageUrl,
       'images': images.map((image) => {'image_url': image}).toList(),
-      if (videoBase64 != null) 'video_base64': videoBase64,
+      if (videoUrl != null) 'video_url': videoUrl,
       'is_rent': isRent,
       'is_broker': isBroker,
       'category': category,
@@ -204,7 +197,7 @@ class PropertyModel {
     double? price,
     String? imageUrl,
     List<String>? images,
-    String? videoBase64,
+    String? videoUrl,
     bool? isRent,
     bool? isBroker,
     String? description,
@@ -236,7 +229,7 @@ class PropertyModel {
       price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       images: images ?? this.images,
-      videoBase64: videoBase64 ?? this.videoBase64,
+      videoUrl: videoUrl ?? this.videoUrl,
       isRent: isRent ?? this.isRent,
       isBroker: isBroker ?? this.isBroker,
       description: description ?? this.description,

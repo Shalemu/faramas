@@ -50,7 +50,7 @@ class AirbnbModel extends PropertyModel {
     double? longitude,
     String? region,
     String? district,
-    String? videoBase64,
+    String? videoUrl,
 
     // Airbnb-specific fields
     required this.maxGuests,
@@ -133,7 +133,7 @@ AirbnbModel copyWith({
   String? district,
    bool? secured,  
   AirbnbModel? airbnb,
-  String? videoBase64,
+  String? videoUrl,
 
   // Airbnb-specific
   int? maxGuests,
@@ -183,7 +183,7 @@ AirbnbModel copyWith({
     region: region ?? this.region,
     isFavorite: isFavorite ?? this.isFavorite,
     district: district ?? this.district,
-    videoBase64: videoBase64 ?? this.videoBase64,
+    videoUrl: videoUrl ?? this.videoUrl,
    
 
     // Airbnb-specific

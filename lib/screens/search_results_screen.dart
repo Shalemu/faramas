@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
-
 import '../models/property_model.dart';
 import 'property_detail_screen.dart';
 
@@ -38,7 +37,7 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   List<PropertyModel> _searchResults = [];
   List<PropertyModel> _filteredResults = [];
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
 
   @override

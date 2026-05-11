@@ -49,6 +49,8 @@ static const String myPayments =
 
     //booking
 static const String bookingConfirmation = '$baseUrl/api/confirmation/';
+static const String secureProperties =
+    '$baseUrl/api/secure-properties/';
 
 }
 

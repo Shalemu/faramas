@@ -7,258 +7,246 @@ import 'package:faramas/models/property_model.dart';
 import 'package:faramas/providers/auth_provider.dart';
 import 'package:faramas/constants/api_constants.dart';
 
-
 class PropertyService {
   int maxFileSize = 5 * 1024 * 1024; // 5 MB
 
-
-
-
-Future<Map<String, dynamic>> createProperty(
-  PropertyModel property,
-  String token,
-  List<String> imagePaths, {
-  String? videoPath,
-}) async {
-  final url = Uri.parse(ApiConstants.postProperties);
-
-  try {
-    if (property.latitude == null || property.longitude == null) {
-      throw Exception('Latitude and Longitude must not be null.');
-    }
-
-    final request = http.MultipartRequest('POST', url);
-
-    // ---------------- HEADERS ----------------
-    request.headers.addAll({
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    });
-
-    debugPrint("HEADERS:");
-    request.headers.forEach((k, v) => debugPrint("$k: $v"));
-
-    // ---------------- FIELDS ----------------
-    request.fields.addAll({
-      "name": property.name,
-      "type": property.type,
-      "address": property.address,
-      "latitude": property.latitude!.toStringAsFixed(6),
-      "longitude": property.longitude!.toStringAsFixed(6),
-      "region": property.region ?? '',
-      "district": property.district ?? '',
-      "category": property.category ?? '',
-      "price": property.price.toString(),
-      "description": property.description,
-      "total_price": property.totalPrice.toString(),
-      "maintenance": property.maintenance.toString(),
-      "is_booked": property.isBooked.toString(),
-      "is_rent": property.isRent.toString(),
-      "is_broker": property.isBroker.toString(),
-    });
-
-    request.fields.forEach((k, v) => debugPrint("$k: $v"));
-
-    // ---------------- FACILITIES ----------------
-    request.fields["facilities"] = jsonEncode(
-      property.facilities.map((f) => {"name": f.name}).toList(),
-    );
-
-    debugPrint("facilities: ${request.fields["facilities"]}");
-
-    // ---------------- IMAGES (MULTIPART) ----------------
-    for (final path in imagePaths) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'images',
-          path,
-        ),
-      );
-    }
-
-    // ---------------- VIDEO (MULTIPART FIXED) ----------------
-    if (videoPath != null && videoPath.isNotEmpty) {
-      debugPrint("VIDEO UPLOAD: $videoPath");
-
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'video',
-          videoPath,
-        ),
-      );
-    }
-
-    debugPrint("Total Files: ${request.files.length}");
-    debugPrint("REQUEST URL: $url");
-
-    // ---------------- SEND ----------------
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    debugPrint("STATUS CODE: ${response.statusCode}");
-    debugPrint("RAW RESPONSE: ${response.body}");
-
-    Map<String, dynamic> responseData = {};
+  Future<Map<String, dynamic>> createProperty(
+    PropertyModel property,
+    String token,
+    List<String> imagePaths, {
+    String? videoPath,
+  }) async {
+    final url = Uri.parse(ApiConstants.postProperties);
 
     try {
-      responseData = jsonDecode(response.body);
-    } catch (e) {
-      debugPrint("JSON PARSE ERROR: $e");
-    }
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      debugPrint("PROPERTY CREATED SUCCESSFULLY");
-
-      debugPrint("SENT FILES:");
-      for (final file in request.files) {
-        debugPrint("Field: ${file.field}, File: ${file.filename}");
+      if (property.latitude == null || property.longitude == null) {
+        throw Exception('Latitude and Longitude must not be null.');
       }
-    } else {
-      debugPrint("REQUEST FAILED");
-    }
 
-    return {
-      "statusCode": response.statusCode,
-      "data": responseData,
-    };
-  } catch (e, st) {
-    debugPrint("ERROR: $e");
-    debugPrint(st.toString());
+      final request = http.MultipartRequest('POST', url);
 
-    return {
-      "statusCode": 500,
-      "data": {"error": e.toString()},
-    };
-  }
-}
+      // HEADERS
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      });
 
-Future<Map<String, dynamic>> postAirbnbProperty({
-  required PropertyModel property,
-  required AuthProvider authProvider,
-  required List<String> imagePaths,
-  String? videoPath,
-}) async {
-  final url = Uri.parse(ApiConstants.postProperties);
+      debugPrint("HEADERS:");
+      request.headers.forEach((k, v) => debugPrint("$k: $v"));
 
-  try {
-    final request = http.MultipartRequest("POST", url);
+      // FIELDS
+      request.fields.addAll({
+        "name": property.name,
+        "type": property.type,
+        "address": property.address,
+        "latitude": property.latitude!.toStringAsFixed(6),
+        "longitude": property.longitude!.toStringAsFixed(6),
+        "region": property.region ?? '',
+        "district": property.district ?? '',
+        "category": property.category ?? '',
+        "price": property.price.toString(),
+        "description": property.description,
+        "total_price": property.totalPrice.toString(),
+        "maintenance": property.maintenance.toString(),
+        "is_booked": property.isBooked.toString(),
+        "is_rent": property.isRent.toString(),
+        "is_broker": property.isBroker.toString(),
+      });
 
+      request.fields.forEach((k, v) => debugPrint("$k: $v"));
 
-    String? token = authProvider.accessToken;
+      // FACILITIES
+      request.fields["facilities"] = jsonEncode(
+        property.facilities.map((f) => {"name": f.name}).toList(),
+      );
 
-    if (token == null || authProvider.isAccessTokenExpired()) {
-      final refreshed = await authProvider.refreshToken();
-      if (!refreshed) {
-        return {
-          "success": false,
-          "status": 401,
-          "message": "Session expired.",
-        };
+      debugPrint("facilities: ${request.fields["facilities"]}");
+
+      // IMAGES
+      for (final path in imagePaths) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images',
+            path,
+          ),
+        );
       }
-      token = authProvider.accessToken;
+
+      if (videoPath != null && videoPath.isNotEmpty) {
+        debugPrint("VIDEO UPLOAD: $videoPath");
+
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'video',
+            videoPath,
+          ),
+        );
+      }
+
+      debugPrint("Total Files: ${request.files.length}");
+      debugPrint("REQUEST URL: $url");
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint("STATUS CODE: ${response.statusCode}");
+      debugPrint("RAW RESPONSE: ${response.body}");
+
+      Map<String, dynamic> responseData = {};
+
+      try {
+        responseData = jsonDecode(response.body);
+      } catch (e) {
+        debugPrint("JSON PARSE ERROR: $e");
+      }
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        debugPrint("PROPERTY CREATED SUCCESSFULLY");
+
+        debugPrint("SENT FILES:");
+        for (final file in request.files) {
+          debugPrint("Field: ${file.field}, File: ${file.filename}");
+        }
+      } else {
+        debugPrint("REQUEST FAILED");
+      }
+
+      return {
+        "statusCode": response.statusCode,
+        "data": responseData,
+      };
+    } catch (e, st) {
+      debugPrint("ERROR: $e");
+      debugPrint(st.toString());
+
+      return {
+        "statusCode": 500,
+        "data": {"error": e.toString()},
+      };
     }
-
-    request.headers.addAll({
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    });
-
-
-    final airbnbBody = property.airbnb != null
-        ? {
-            "max_guests": property.airbnb!.maxGuests,
-            "bedrooms": property.airbnb!.bedrooms,
-            "bathrooms": property.airbnb!.bathrooms,
-            "cleaning_fee": property.airbnb!.cleaningFee.toStringAsFixed(2),
-            "check_in_time": "${property.airbnb!.checkInTime}:00",
-            "check_out_time": "${property.airbnb!.checkOutTime}:00",
-            "house_rules": property.airbnb!.houseRules,
-            "amenities": property.airbnb!.amenities,
-            "cancellation_policy": property.airbnb!.cancellationPolicy,
-            "minimum_stay": property.airbnb!.minimumStay,
-            "maximum_stay": property.airbnb!.maximumStay,
-            "instant_book": property.airbnb!.instantBook,
-            "property_sub_type": property.airbnb!.propertySubType,
-            "security_deposit":
-                property.airbnb!.securityDeposit.toStringAsFixed(2),
-            "safety_features": property.airbnb!.safetyFeatures,
-            "wifi_password": property.airbnb!.wifiPassword,
-            "access_instructions": property.airbnb!.accessInstructions,
-          }
-        : {};
-
-  
-    request.fields.addAll({
-      "name": property.name,
-      "type": property.type,
-      "property_type": "Airbnb",
-      "address": property.address,
-      "price": property.price.toStringAsFixed(2),
-      "category": property.category ?? "Short Stay",
-      "description": property.description,
-      "total_price": property.totalPrice.toStringAsFixed(2),
-      "maintenance": property.maintenance.toStringAsFixed(2),
-      "latitude": property.latitude?.toStringAsFixed(7) ?? "0.0000000",
-      "longitude": property.longitude?.toStringAsFixed(7) ?? "0.0000000",
-      "region": property.region ?? '',
-      "district": property.district ?? '',
-      "is_rent": property.isRent.toString(),
-      "is_broker": property.isBroker.toString(),
-      "is_booked": property.isBooked.toString(),
-      "airbnb": jsonEncode(airbnbBody),
-    });
-
-   
-    request.fields["facilities"] = jsonEncode(
-      property.facilities.map((f) => {"name": f.name}).toList(),
-    );
-
-    debugPrint("facilities: ${request.fields["facilities"]}");
-
-
-    for (final path in imagePaths) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'images',
-          path,
-        ),
-      );
-    }
-
-
-    if (videoPath != null && videoPath.isNotEmpty) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'video',
-          videoPath,
-        ),
-      );
-    }
-
-    //  SEND 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    debugPrint("Status: ${response.statusCode}");
-    debugPrint("Response: ${response.body}");
-
-    final resJson = jsonDecode(response.body);
-
-    return {
-      "success": response.statusCode == 200 || response.statusCode == 201,
-      "status": response.statusCode,
-      ...resJson,
-    };
-  } catch (e, st) {
-    debugPrint("Error posting Airbnb property: $e");
-    debugPrint(st.toString());
-
-    return {
-      "success": false,
-      "message": e.toString(),
-    };
   }
-}
+
+  Future<Map<String, dynamic>> postAirbnbProperty({
+    required PropertyModel property,
+    required AuthProvider authProvider,
+    required List<String> imagePaths,
+    String? videoPath,
+  }) async {
+    final url = Uri.parse(ApiConstants.postProperties);
+
+    try {
+      final request = http.MultipartRequest("POST", url);
+
+      String? token = authProvider.accessToken;
+
+      if (token == null || authProvider.isAccessTokenExpired()) {
+        final refreshed = await authProvider.refreshToken();
+        if (!refreshed) {
+          return {
+            "success": false,
+            "status": 401,
+            "message": "Session expired.",
+          };
+        }
+        token = authProvider.accessToken;
+      }
+
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      });
+
+      final airbnbBody = property.airbnb != null
+          ? {
+              "max_guests": property.airbnb!.maxGuests,
+              "bedrooms": property.airbnb!.bedrooms,
+              "bathrooms": property.airbnb!.bathrooms,
+              "cleaning_fee": property.airbnb!.cleaningFee.toStringAsFixed(2),
+              "check_in_time": "${property.airbnb!.checkInTime}:00",
+              "check_out_time": "${property.airbnb!.checkOutTime}:00",
+              "house_rules": property.airbnb!.houseRules,
+              "amenities": property.airbnb!.amenities,
+              "cancellation_policy": property.airbnb!.cancellationPolicy,
+              "minimum_stay": property.airbnb!.minimumStay,
+              "maximum_stay": property.airbnb!.maximumStay,
+              "instant_book": property.airbnb!.instantBook,
+              "property_sub_type": property.airbnb!.propertySubType,
+              "security_deposit":
+                  property.airbnb!.securityDeposit.toStringAsFixed(2),
+              "safety_features": property.airbnb!.safetyFeatures,
+              "wifi_password": property.airbnb!.wifiPassword,
+              "access_instructions": property.airbnb!.accessInstructions,
+            }
+          : {};
+
+      request.fields.addAll({
+        "name": property.name,
+        "type": property.type,
+        "property_type": "Airbnb",
+        "address": property.address,
+        "price": property.price.toStringAsFixed(2),
+        "category": property.category ?? "Short Stay",
+        "description": property.description,
+        "total_price": property.totalPrice.toStringAsFixed(2),
+        "maintenance": property.maintenance.toStringAsFixed(2),
+        "latitude": property.latitude?.toStringAsFixed(7) ?? "0.0000000",
+        "longitude": property.longitude?.toStringAsFixed(7) ?? "0.0000000",
+        "region": property.region ?? '',
+        "district": property.district ?? '',
+        "is_rent": property.isRent.toString(),
+        "is_broker": property.isBroker.toString(),
+        "is_booked": property.isBooked.toString(),
+        "airbnb": jsonEncode(airbnbBody),
+      });
+
+      request.fields["facilities"] = jsonEncode(
+        property.facilities.map((f) => {"name": f.name}).toList(),
+      );
+
+      debugPrint("facilities: ${request.fields["facilities"]}");
+
+      for (final path in imagePaths) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images',
+            path,
+          ),
+        );
+      }
+
+      if (videoPath != null && videoPath.isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'video',
+            videoPath,
+          ),
+        );
+      }
+
+      //  SEND
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint("Status: ${response.statusCode}");
+      debugPrint("Response: ${response.body}");
+
+      final resJson = jsonDecode(response.body);
+
+      return {
+        "success": response.statusCode == 200 || response.statusCode == 201,
+        "status": response.statusCode,
+        ...resJson,
+      };
+    } catch (e, st) {
+      debugPrint("Error posting Airbnb property: $e");
+      debugPrint(st.toString());
+
+      return {
+        "success": false,
+        "message": e.toString(),
+      };
+    }
+  }
   // Fetch all properties
 
   static Future<List<PropertyModel>> fetchProperties({
@@ -482,7 +470,6 @@ Future<Map<String, dynamic>> postAirbnbProperty({
       debugPrint("URL: $url");
       debugPrint("Status Code: ${response.statusCode}");
       debugPrint("Body: ${response.body}");
-      debugPrint("==================================");
 
       final data = jsonDecode(response.body);
 
@@ -521,7 +508,7 @@ Future<Map<String, dynamic>> postAirbnbProperty({
     } catch (e) {
       debugPrint("===== AIRBNB BOOKING EXCEPTION =====");
       debugPrint(e.toString());
-      debugPrint("====================================");
+
       return {
         'success': false,
         'payment_required': false,
@@ -561,25 +548,24 @@ Future<Map<String, dynamic>> postAirbnbProperty({
     required int propertyId,
   }) async {
     final url = Uri.parse(
-      'https://demo.faramas.co.tz/api/secure-properties/?property_id=$propertyId',
+      '${ApiConstants.secureProperties}?property_id=$propertyId',
     );
 
     final response = await http.get(
       url,
       headers: {
         'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     );
 
     if (response.statusCode == 200) {
-      print('Secure toggle success for propertyId: $propertyId');
-      print('Response body: ${response.body}');
+      debugPrint('Secure toggle success: $propertyId');
+      debugPrint('Response: ${response.body}');
     } else {
-      print('Failed to toggle secure status for propertyId: $propertyId');
-      print('Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      throw Exception('Failed to toggle secure status: ${response.body}');
+      debugPrint('Failed secure toggle: ${response.statusCode}');
+      debugPrint(response.body);
+      throw Exception('Failed to toggle secure status');
     }
   }
 

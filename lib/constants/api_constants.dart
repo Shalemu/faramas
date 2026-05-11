@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 class ApiConstants {
   // 161.97.65.175:9098
   // 192.168.31.228:8000
-  // static const String baseUrl = 'http://161.97.65.175:9098';
-  static const String baseUrl = 'https://demo.faramas.co.tz';
+  static const String baseUrl = 'http://161.97.65.175:9098';
+  // static const String baseUrl = 'https://demo.faramas.co.tz';
 
   //auth
   static const String login = '$baseUrl/auth/login/';

@@ -603,6 +603,100 @@ class _HomeContentScreenState extends State<HomeContentScreen>
             ),
           ),
           GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = 'Short Stay';
+                print('Filtered by: $_selectedCategory');
+              });
+            },
+            child: const CategoryIcon(
+              icon: Icons.home_work_rounded,
+              label: 'Short Stay',
+              color: Colors.pink,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.pink, Colors.pinkAccent],
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = categoryFilterMap['Land'];
+                print('Filtered by: $_selectedCategory');
+              });
+            },
+            child: CategoryIcon(
+              icon: Icons.landscape_rounded,
+              label: 'Land',
+              color: Colors.purple,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.purple, Colors.purpleAccent],
+              ),
+              isSelected: _selectedCategory == categoryFilterMap['Land'],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = 'Office';
+                print('Filtered by: $_selectedCategory');
+              });
+            },
+            child: CategoryIcon(
+              icon: Icons.work_rounded,
+              label: 'Office',
+              color: Colors.red,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.red, Colors.redAccent],
+              ),
+              isSelected: _selectedCategory == 'Office',
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = categoryFilterMap['Rooms'];
+                print('Filtered by: $_selectedCategory');
+              });
+            },
+            child: CategoryIcon(
+              icon: Icons.meeting_room_rounded,
+              label: 'Rooms',
+              color: Colors.green,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.green, Colors.lightGreen],
+              ),
+              isSelected: _selectedCategory == categoryFilterMap['Rooms'],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = 'Construction';
+                print('Filtered by: $_selectedCategory');
+              });
+            },
+            child: CategoryIcon(
+              icon: Icons.construction_rounded,
+              label: 'Construction',
+              color: Colors.red,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.red, Colors.redAccent],
+              ),
+              isSelected: _selectedCategory == 'Construction',
+            ),
+          ),
+          GestureDetector(
             onTap: _navigateToAllProperties,
             child: const CategoryIcon(
               icon: Icons.grid_view_rounded,

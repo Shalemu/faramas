@@ -10,5 +10,5 @@ export 'screens/shortlist_screen.dart';
 export 'screens/property_detail_screen.dart';
 // export 'screens/upload_screen.dart';
 // export 'screens/inbox_screen.dart';
-export 'screens/profile_screen.dart';
+export 'features/profile/screens/profile_screen.dart';
 export 'screens/search_results_screen.dart';

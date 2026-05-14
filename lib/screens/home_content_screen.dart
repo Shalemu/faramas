@@ -598,7 +598,7 @@ class _HomeContentScreenState extends State<HomeContentScreen>
           ),
           const SizedBox(height: 12),
 
-          // Enhanced Animated Ads Carousel
+         
           // Enhanced Animated Ads Carousel
           Container(
             height: 160,

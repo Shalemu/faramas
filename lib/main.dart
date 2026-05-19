@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 import 'config/app_routes.dart';
+import 'features/properties/controller/property_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'l10n/app_localizations.dart';
@@ -37,6 +38,7 @@ void main() async {
         ChangeNotifierProvider<TourRequestProvider>(create: (_) => TourRequestProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider<LanguageProvider>.value(value: languageProvider),
+        ChangeNotifierProvider(create: (_) => PropertyProvider(),),
       ],
       child: const FaramasApp(),
     ),
@@ -69,7 +71,7 @@ class FaramasApp extends StatelessWidget {
             Locale('en'), // English
             Locale('sw'), // Kiswahili
           ],
-          // The initialRoute should now point to a splash screen
+          // The initialRoute should now point to a splash screens
           initialRoute: AppRoutes.splash,
           routes: AppRoutes.pages,
         );

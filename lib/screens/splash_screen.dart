@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  /// ✅ This function now skips the login screen completely
+  /// ✅ This function now skips the login screens completely
   Future<void> _navigateToHomeDirectly() async {
     // Wait for splash animation to complete
     await Future.delayed(const Duration(seconds: 3));

@@ -1,14 +1,12 @@
-// lib/screens/property_detail_screen.dart
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:faramas/config/app_routes.dart';
 import 'package:faramas/models/user_model.dart';
 import 'package:faramas/providers/favorites_provider.dart';
-import 'package:faramas/screens/airbnb_booking_screen.dart';
+import 'package:faramas/features/airbnb/screens/airbnb_booking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,7 +17,6 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../config/app_colors.dart';
 import '../models/property_model.dart';
-// import '../services/property_service.dart';
 import '../providers/auth_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

@@ -9,11 +9,11 @@ import '../providers/tour_request_provider.dart';
 
 // Screens
 import '../screens/home_content_screen.dart';
-import '../screens/owner_booking_screen.dart';
+import '../features/profile/screens/owner_booking_screen.dart';
 import '../screens/favoritie_screen.dart';
-import '../screens/profile_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
 import '../screens/upload_screen.dart';
-import '../screens/airbnb_upload_screen.dart';
+import '../features/airbnb/screens/airbnb_upload_screen.dart';
 
 // Widgets & Config
 import '../widgets/welcome_popup.dart';

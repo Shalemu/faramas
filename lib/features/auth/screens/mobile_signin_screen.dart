@@ -22,7 +22,7 @@ class _MobileSignInScreenState extends State<MobileSignInScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Image.network(
-          'http://faramas.co.tz/images/logo/frlogo.png',
+          'http://app.co.tz/images/logo/frlogo.png',
           height: 50,
           fit: BoxFit.contain,
         ),
@@ -38,7 +38,7 @@ class _MobileSignInScreenState extends State<MobileSignInScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.network(
-                'http://faramas.co.tz/images/logo/frlogo.png',
+                'http://app.co.tz/images/logo/frlogo.png',
                 width: 180,
                 height: 180,
                 fit: BoxFit.contain,

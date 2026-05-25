@@ -1,4 +1,4 @@
-package com.example.faramas
+package com.faramas.app
 
 import io.flutter.embedding.android.FlutterActivity
 

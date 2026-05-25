@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import '../models/property_model.dart';
+import '../l10n/app_localizations.dart';
 import 'property_detail_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
@@ -145,16 +146,18 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     });
   }
 
-  String getTimeAgo(DateTime? dateTime) {
-    if (dateTime == null) return "Unknown";
+  String getTimeAgo(DateTime? dateTime, AppLocalizations localizations) {
+    if (dateTime == null) return localizations.error;
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    if (difference.inMinutes < 1) return 'Just now';
+    if (difference.inMinutes < 1) return localizations.justNow;
     if (difference.inMinutes < 60)
-      return '${difference.inMinutes} minute(s) ago';
-    if (difference.inHours < 24) return '${difference.inHours} hour(s) ago';
-    if (difference.inDays == 1) return 'Yesterday';
-    if (difference.inDays < 7) return '${difference.inDays} day(s) ago';
+      return '${difference.inMinutes} ${localizations.minutesAgo}';
+    if (difference.inHours < 24)
+      return '${difference.inHours} ${localizations.hoursAgo}';
+    if (difference.inDays == 1) return localizations.yesterday;
+    if (difference.inDays < 7)
+      return '${difference.inDays} ${localizations.daysAgo}';
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
@@ -168,11 +171,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final hasResults = _searchResults.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Results'),
+        title: Text(localizations.searchResults),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -189,7 +193,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: 'Search here...',
+                hintText: localizations.searchHere,
                 filled: true,
                 fillColor: Colors.grey.shade200,
                 border: OutlineInputBorder(
@@ -210,9 +214,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 ),
               )
             else if (!hasResults)
-              const Expanded(
+              Expanded(
                 child: Center(
-                  child: Text('No properties found.'),
+                  child: Text(localizations.noPropertiesFound),
                 ),
               )
             else
@@ -298,8 +302,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                         ),
                                         child: Text(
                                           property.category == "Short Stay"
-                                              ? "Airbnb"
-                                              : "For ${property.category}",
+                                              ? localizations.airbnb
+                                              : property.category == "Rent"
+                                                  ? localizations.forRent
+                                                  : property.category == "Sale"
+                                                      ? localizations.forSale
+                                                      : (property.category ??
+                                                          ''),
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 10,
@@ -353,7 +362,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                                           const TextStyle(color: Colors.green),
                                     ),
                                     Text(
-                                      getTimeAgo(property.createdAt),
+                                      getTimeAgo(
+                                          property.createdAt, localizations),
                                       style: const TextStyle(
                                           fontSize: 12, color: Colors.grey),
                                     ),

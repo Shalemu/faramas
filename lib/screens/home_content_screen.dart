@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import '../config/app_routes.dart';
+import '../config/version_service.dart';
 import '../constants/api_constants.dart';
 import '../features/properties/controller/property_provider.dart';
 import '../models/ad_model.dart';
@@ -61,6 +62,11 @@ class _HomeContentScreenState extends State<HomeContentScreen>
   @override
   void initState() {
     super.initState();
+
+    // check update
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.check(context);
+    });
 
     /// LOAD ADS
     _loadAds();

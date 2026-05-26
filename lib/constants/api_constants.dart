@@ -3,11 +3,12 @@ import 'package:http/http.dart' as http;
 class ApiConstants {
   // 161.97.65.175:9098
   // 192.168.31.228:8000
-  // static const String baseUrl = 'http://161.97.65.175:9098';
+  static const String baseUrl = 'http://161.97.65.175:9098';
   // static const String baseUrl = 'https://demo.faramas.co.tz';
-  static const String baseUrl = 'https://1b87-197-186-2-150.ngrok-free.app';
+  // static const String baseUrl = 'https://b6c5-154-74-176-4.ngrok-free.app';
 
   //auth
+  static const String appVersionConfig = '$baseUrl/app-version-config/';
   static const String login = '$baseUrl/auth/login/';
   static const String user = '$baseUrl/auth/user';
   static const String otpVerify = '$baseUrl/auth/otp/verify/';

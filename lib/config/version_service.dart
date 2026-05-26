@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -20,23 +21,40 @@ class UpdateService {
 
       final info = await PackageInfo.fromPlatform();
 
-      final currentVersion = info.version;
+      final currentVersion = info.version.split('+').first;
+      print("Current Version");
+      print(currentVersion);
 
       final minimumVersion = data['minimum_version'];
       final latestVersion = data['latest_version'];
 
+      print("latestVersion Version");
+      print(latestVersion);
+
+      print("minimumVersion Version");
+      print(minimumVersion);
+
       final forceUpdate = data['force_update'];
 
-      final apkUrl = data['apk_url'];
+      final androidUrl = data['android_apk_url'];
+      final iosUrl = data['apple_apk_url'];
+      final message = data['message'];
+
+      String? updateUrl;
+      if (Platform.isAndroid) {
+        updateUrl = androidUrl;
+      } else if (Platform.isIOS) {
+        updateUrl = iosUrl;
+      }
 
       if (_isLower(currentVersion, minimumVersion)) {
-        _showUpdateDialog(context, apkUrl);
+        _showUpdateDialog(context, updateUrl, message);
         return;
       }
 
       if (_isLower(currentVersion, latestVersion) &&
           forceUpdate == true) {
-        _showUpdateDialog(context, apkUrl);
+        _showUpdateDialog(context, updateUrl, message);
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -67,29 +85,33 @@ class UpdateService {
 
   static void _showUpdateDialog(
       BuildContext context,
-      String apkUrl,
+      String? apkUrl,
+      String message,
       ) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text('Update Required'),
-        content: const Text(
-          'Please update the app to continue.',
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () async {
-              final uri = Uri.parse(apkUrl);
-
-              await launchUrl(
-                uri,
-                mode: LaunchMode.externalApplication,
-              );
-            },
-            child: const Text('Update'),
+      builder: (context) => PopScope(
+        canPop: false, // Prevents user from dismissing via back button
+        child: AlertDialog.adaptive(
+          icon: const Icon(Icons.update_rounded, size: 40),
+          title: const Text('Update Required'),
+          content: Text(
+            message,
+            textAlign: TextAlign.center,
           ),
-        ],
+          actions: [
+            FilledButton(
+              onPressed: () async {
+                final uri = Uri.parse(apkUrl!);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: const Text('Update Now'),
+            ),
+          ],
+        ),
       ),
     );
   }

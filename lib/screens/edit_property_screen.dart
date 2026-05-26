@@ -80,144 +80,124 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
 
   final List<String> mergedImages = [];
 
-Future<void> _uploadProperty() async {
-  if (!(_formKey.currentState?.validate() ?? false)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please fill all required fields.')),
-    );
-    return;
-  }
+  Future<void> _uploadProperty() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields.')),
+      );
+      return;
+    }
 
-  if (_uploadedImages.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please select at least one image.')),
-    );
-    return;
-  }
+    if (_uploadedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one image.')),
+      );
+      return;
+    }
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    final service = PropertyService();
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final token = authProvider.accessToken;
+      try {
+        final service = PropertyService();
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final token = authProvider.accessToken;
 
-    
-    final List<Map<String, dynamic>> apiImages = [];
-    for (var imgPath in _uploadedImages) {
-      if (imgPath.startsWith('http')) {
-        apiImages.add({"filename": imgPath.split('/').last, "data": imgPath});
+        final property = PropertyModel(
+          id: widget.property.id,
+          name: _nameController.text,
+          type: _selectedType,
+          address: _addressController.text,
+          price:
+              double.tryParse(_priceController.text.replaceAll(',', '').trim()) ??
+                  0.0,
+          isRent: _selectedCategory == 'Rent',
+          category: _selectedCategory,
+          description: _descriptionController.text,
+          totalPrice: widget.property.totalPrice,
+          maintenance: widget.property.maintenance,
+          facilities: _selectedFacilities,
+          images: _uploadedImages,
+          latitude: widget.property.latitude,
+          longitude: widget.property.longitude,
+          region: widget.property.region,
+          district: widget.property.district,
+        );
+
+        final payload = {
+          'name': property.name,
+          'type': property.type,
+          'category': property.category ?? "",
+          'address': property.address,
+          'price': property.price.toString(),
+          'description': property.description,
+          'is_rent': property.isRent,
+          'facilities': property.facilities.map((f) => f.name).toList(),
+        };
+
+        debugPrint("=== FULL PROPERTY PAYLOAD ===");
+        debugPrint(const JsonEncoder.withIndent('  ').convert(payload));
+        debugPrint("============================");
+
+        final result = await service.updateProperty(
+          token!,
+          widget.property.id!.toString(),
+          property,
+        );
+
+      final statusCode = result['statusCode'];
+      final responseData = result['data'] ?? {};
+
+      debugPrint("Update status code: $statusCode");
+      debugPrint("Update response data: $responseData");
+
+      if (statusCode == 200 || statusCode == 201) {
+        _showAnimatedDialog(
+          property,
+          type: DialogType.success,
+          message: "Property updated successfully!",
+          onAction: () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+          },
+        );
       } else {
-        final bytes = await File(imgPath).readAsBytes();
-        apiImages.add({
-          "filename": imgPath.split('/').last,
-          "data": base64Encode(bytes),
-        });
+        _showAnimatedDialog(
+          property,
+          type: DialogType.error,
+          message: responseData['error'] ??
+              "Failed to update property. Please try again.",
+        );
       }
-    }
-
- 
-    final property = PropertyModel(
-      id: widget.property.id,
-      name: _nameController.text,
-      type: _selectedType,
-      address: _addressController.text,
-      price: double.tryParse(_priceController.text.replaceAll(',', '').trim()) ?? 0.0,
-      isRent: _selectedCategory == 'Rent',
-      category: _selectedCategory,
-      description: _descriptionController.text,
-      totalPrice: widget.property.totalPrice,
-      maintenance: widget.property.maintenance,
-      facilities: _selectedFacilities,
-      images: _uploadedImages,
-      latitude: widget.property.latitude,
-      longitude: widget.property.longitude,
-      region: widget.property.region,
-      district: widget.property.district,
-    );
-
-
-    final payload = {
-      'name': property.name,
-      'type': property.type,
-      'category': property.category ?? "",
-      'address': property.address,
-      'price': property.price.toString(),
-      'description': property.description,
-      'is_rent': property.isRent,
-      'facilities': property.facilities.map((f) => f.name).toList(), // or f.id if backend expects IDs
-      'images': apiImages,
-    };
-
-
-    debugPrint("=== FULL PROPERTY PAYLOAD ===");
-    debugPrint(const JsonEncoder.withIndent('  ').convert(payload));
-    debugPrint("============================");
-
-   
-   
-    final result = await service.updateProperty(
-      token!,
-      widget.property.id!.toString(),
-      property,
-      apiImages,
-    );
-
-    final statusCode = result['statusCode'];
-    final responseData = result['data'] ?? {};
-
-    debugPrint("Update status code: $statusCode");
-    debugPrint("Update response data: $responseData");
-
-    if (statusCode == 200 || statusCode == 201) {
+    } catch (e) {
+      debugPrint("Exception in _uploadProperty: $e");
       _showAnimatedDialog(
-        property,
-        type: DialogType.success,
-        message: "Property updated successfully!",
-        onAction: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-        },
-      );
-    } else {
-      _showAnimatedDialog(
-        property,
+        widget.property,
         type: DialogType.error,
-        message: responseData['error'] ?? "Failed to update property. Please try again.",
+        message: "Error: $e",
       );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  } catch (e) {
-    debugPrint("Exception in _uploadProperty: $e");
-    _showAnimatedDialog(
-      widget.property,
-      type: DialogType.error,
-      message: "Error: $e",
-    );
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
   }
-}
-
 
 // --- Dialog Helper ---
-void _showAnimatedDialog(
-  PropertyModel property, {
-  required DialogType type,
-  required String message,
-  VoidCallback? onAction,
-}) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => AnimatedPaymentDialog(
-      property: property,
-      message: message,
-      type: type,
-      onAction: onAction,
-    ),
-  );
-}
-
+  void _showAnimatedDialog(
+    PropertyModel property, {
+    required DialogType type,
+    required String message,
+    VoidCallback? onAction,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AnimatedPaymentDialog(
+        property: property,
+        message: message,
+        type: type,
+        onAction: onAction,
+      ),
+    );
+  }
 
   Widget _buildImageUploadGrid() {
     return GridView.builder(
@@ -501,8 +481,7 @@ void _showAnimatedDialog(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : () => _uploadProperty(),
-                  icon: const Icon(Icons.save,
-                  color:Colors.white),
+                  icon: const Icon(Icons.save, color: Colors.white),
                   label: const Text(
                     'Save Changes',
                     style: TextStyle(fontSize: 16, color: AppColors.textLight),

@@ -3,6 +3,7 @@
 import 'package:faramas/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../config/app_routes.dart';
+import '../config/version_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,6 +21,10 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    // check update
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.check(context);
+    });
 
     _animationController = AnimationController(
       vsync: this,
@@ -70,7 +75,10 @@ class _SplashScreenState extends State<SplashScreen>
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withOpacity(0.8)
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:faramas/config/app_colors.dart';
 import 'package:faramas/config/app_routes.dart';
 import 'package:faramas/screens/map_picker.dart';
 import 'package:faramas/services/property_service.dart';
@@ -8,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import '../config/app_colors.dart';
 import '../models/facility_model.dart';
 import '../models/property_model.dart';
 import '../providers/auth_provider.dart';

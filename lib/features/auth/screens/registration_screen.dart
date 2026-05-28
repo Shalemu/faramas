@@ -16,15 +16,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  // final _mobileController = TextEditingController(text: '+255');
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  // final _locationController = TextEditingController();
-  // final _dobController = TextEditingController();
   final _serviceChargeController = TextEditingController();
-  // String _selectedGender = 'Male';
-  // final List<String> _genders = ['Male', 'Female', 'Other'];
 
   bool _acceptTerms = false;
   bool _obscurePassword = true;
@@ -32,6 +27,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final authService = AuthService();
   int _selectedUserType = 0;
   bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
 
   void _toggleAcceptTerms(bool? value) {
     setState(() {
@@ -68,39 +64,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  // String _getGenderTranslation(BuildContext context, String gender) {
-  //   final localizations = AppLocalizations.of(context);
-  //   switch (gender.toLowerCase()) {
-  //     case 'male':
-  //       return localizations?.male ?? 'Male';
-  //     case 'female':
-  //       return localizations?.female ?? 'Female';
-  //     case 'other':
-  //       return localizations?.other ?? 'Other';
-  //     default:
-  //       return gender;
-  //   }
-  // }
-
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: DateTime.now(),
-  //     firstDate: DateTime(1900),
-  //     lastDate: DateTime.now(),
-  //   );
-  //   if (picked != null && mounted) {
-  //     setState(() {
-  //       // Format the date as YYYY-MM-DD
-  //       _dobController.text =
-  //           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-  //     });
-  //   }
-  // }
-
   void _signUp() async {
     final localizations = AppLocalizations.of(context);
-
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     if (!_acceptTerms) {
       _showSnackBar(
           localizations?.acceptTerms ?? 'Please accept the Terms & Conditions');
@@ -134,13 +102,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim(),
-        // phone: _mobileController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text,
         role: role,
-        // location: _locationController.text.trim(),
-        // gender: _selectedGender,
-        // dateOfBirth: _dobController.text.trim(),
         serviceCharge: (_selectedUserType == 2 || _selectedUserType == 3)
             ? _serviceChargeController.text.trim()
             : null,
@@ -192,149 +156,169 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
-            Image.asset(
-              "assets/logo/faramas_logo.png",
-              width: 150,
-              height: 150,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _UserTypeCheckbox(
-                  label: localizations?.customer ?? 'Customer',
-                  selected: _selectedUserType == 1,
-                  onTap: () => _selectUserType(1),
-                ),
-                const SizedBox(width: 10),
-                _UserTypeCheckbox(
-                  label: localizations?.broker ?? 'Broker',
-                  selected: _selectedUserType == 2,
-                  onTap: () => _selectUserType(2),
-                ),
-                const SizedBox(width: 10),
-                _UserTypeCheckbox(
-                  label: localizations?.propertyOwner ?? 'Property Owner',
-                  selected: _selectedUserType == 3,
-                  onTap: () => _selectUserType(3),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            TextField(
-                controller: _firstNameController,
-                decoration: inputDecoration(
-                    localizations?.firstName ?? 'First Name', Icons.person)),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _lastNameController,
-              decoration: inputDecoration(
-                  localizations?.lastName ?? 'Last Name', Icons.person),
-            ),
-            const SizedBox(height: 15),
-            if (_selectedUserType == 2 || _selectedUserType == 3)
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Image.asset(
+                "assets/logo/faramas_logo.png",
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _UserTypeCheckbox(
+                    label: localizations?.customer ?? 'Customer',
+                    selected: _selectedUserType == 1,
+                    onTap: () => _selectUserType(1),
+                  ),
+                  const SizedBox(width: 10),
+                  _UserTypeCheckbox(
+                    label: localizations?.broker ?? 'Broker',
+                    selected: _selectedUserType == 2,
+                    onTap: () => _selectUserType(2),
+                  ),
+                  const SizedBox(width: 10),
+                  _UserTypeCheckbox(
+                    label: localizations?.propertyOwner ?? 'Property Owner',
+                    selected: _selectedUserType == 3,
+                    onTap: () => _selectUserType(3),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               TextField(
-                controller: _serviceChargeController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                  controller: _firstNameController,
+                  decoration: inputDecoration(
+                      localizations?.firstName ?? 'First Name', Icons.person)),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _lastNameController,
                 decoration: inputDecoration(
-                  localizations?.serviceCharge ?? 'Service Charge',
-                  Icons.money,
-                  suffix: const Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Text('Tsh.'),
-                  ),
-                ),
+                    localizations?.lastName ?? 'Last Name', Icons.person),
               ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _emailController,
-              decoration: inputDecoration(
-                  localizations?.email ?? 'Email Address', Icons.email),
-            ),
-            const SizedBox(height: 15),
-
-            const SizedBox(height: 15),
-            TextField(
-              controller: _usernameController,
-              keyboardType: TextInputType.text,
-              decoration: inputDecoration(
-                  localizations?.username ?? 'Username', Icons.person),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: inputDecoration(
-                localizations?.password ?? 'Password',
-                Icons.lock,
-                suffix: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
-                  ),
-                  onPressed: _togglePasswordVisibility,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: _obscureConfirmPassword,
-              decoration: inputDecoration(
-                localizations?.confirmPassword ?? 'Confirm Password',
-                Icons.lock,
-                suffix: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: Colors.grey,
-                  ),
-                  onPressed: _toggleConfirmPasswordVisibility,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            Row(
-              children: [
-                Checkbox(
-                  value: _acceptTerms,
-                  onChanged: _toggleAcceptTerms,
-                ),
-                Expanded(
-                  child: Text(localizations?.acceptTerms ??
-                      'Please accept the Terms & Conditions to SignUp'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : ElevatedButton(
-                      onPressed: _signUp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        textStyle: const TextStyle(fontSize: 18),
-                      ),
-                      child: Text(
-                        localizations?.signUp ?? 'Sign Up',
-                        style: const TextStyle(color: AppColors.textLight),
-                      ),
+              const SizedBox(height: 15),
+              if (_selectedUserType == 2 || _selectedUserType == 3)
+                TextField(
+                  controller: _serviceChargeController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: inputDecoration(
+                    localizations?.serviceCharge ?? 'Service Charge',
+                    Icons.money,
+                    suffix: const Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Text('Tsh.'),
                     ),
-            ),
-            const SizedBox(height: 20),
-          ],
+                  ),
+                ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _emailController,
+                decoration: inputDecoration(
+                    localizations?.email ?? 'Email Address', Icons.email),
+              ),
+              const SizedBox(height: 15),
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: _usernameController,
+                keyboardType: TextInputType.text,
+                decoration: inputDecoration(
+                    localizations?.username ?? 'Username', Icons.person),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Username is required';
+                  }
+                  final usernameRegex = RegExp(r'^[\w.@+-]+$');
+                  if (!usernameRegex.hasMatch(value)) {
+                    return 'Only letters, numbers and @/./+/-/_ allowed';
+                  }
+                  if (value.length < 3) {
+                    return 'Username too short';
+                  }
+                  if (value.length > 150) {
+                    return 'Username too long';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: inputDecoration(
+                  localizations?.password ?? 'Password',
+                  Icons.lock,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: _togglePasswordVisibility,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
+                decoration: inputDecoration(
+                  localizations?.confirmPassword ?? 'Confirm Password',
+                  Icons.lock,
+                  suffix: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: _toggleConfirmPasswordVisibility,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _acceptTerms,
+                    onChanged: _toggleAcceptTerms,
+                  ),
+                  Expanded(
+                    child: Text(localizations?.acceptTerms ??
+                        'Please accept the Terms & Conditions to SignUp'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : ElevatedButton(
+                        onPressed: _signUp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          textStyle: const TextStyle(fontSize: 18),
+                        ),
+                        child: Text(
+                          localizations?.signUp ?? 'Sign Up',
+                          style: const TextStyle(color: AppColors.textLight),
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

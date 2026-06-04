@@ -12,7 +12,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
   bool _additionalServicesExpanded = false;
 
   final Uri _playStoreUrl = Uri.parse(
-      'https://play.google.com/store/apps/details?id=com.faramas.app');
+      'https://play.google.com/store/apps/details?id=com.app.app');
   final Uri _appStoreUrl = Uri.parse('https://apps.apple.com/app/idXXXXXXXXX');
 
   void _launchUrl(Uri url) async {

@@ -21,7 +21,7 @@ class _ShortlistScreenState extends State<ShortlistScreen> {
   final Map<String, String> _brokerDetails = {
     'name': 'John Doe',
     'phone': '+255 123 456 789',
-    'email': 'john.doe@faramas.com',
+    'email': 'john.doe@app.com',
     'location': 'Dar es Salaam, Tanzania',
     'image': 'assets/images/broker.jpg',
   };

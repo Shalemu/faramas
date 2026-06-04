@@ -205,21 +205,21 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> with SingleTicker
             ),
             _buildContactOption(
               title: 'Instagram',
-              value: '@faramas.co.tz',
+              value: '@app.co.tz',
               color: Colors.pink,
               icon: Icons.camera,
               onTap: () {
-                _launchUrl('https://instagram.com/faramas.co.tz');
+                _launchUrl('https://instagram.com/app.co.tz');
               },
               animation: _slideAnimations[2],
             ),
             _buildContactOption(
               title: 'Website',
-              value: 'faramas.co.tz',
+              value: 'app.co.tz',
               color: Colors.blue,
               icon: Icons.language,
               onTap: () {
-                _launchUrl('https://faramas.co.tz');
+                _launchUrl('https://app.co.tz');
               },
               animation: _slideAnimations[3],
             ),

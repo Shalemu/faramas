@@ -200,7 +200,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             children: [
               TileLayer(
                 urlTemplate: tileUrl,
-                userAgentPackageName: 'com.example.app',
+                userAgentPackageName: 'com.app.app',
               ),
               if (hasLocation)
                 MarkerLayer(

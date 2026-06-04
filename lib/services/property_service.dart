@@ -10,7 +10,7 @@ import 'package:faramas/providers/auth_provider.dart';
 import 'package:faramas/constants/api_constants.dart';
 
 class PropertyService {
-  int maxFileSize = 5 * 1024 * 1024; // 5 MB
+  int maxFileSize = 5 * 1024 * 1024;
 
   Future<Map<String, dynamic>> createProperty(
     PropertyModel property,
@@ -33,9 +33,6 @@ class PropertyService {
         "Accept": "application/json",
       });
 
-      debugPrint("HEADERS:");
-      request.headers.forEach((k, v) => debugPrint("$k: $v"));
-
       // FIELDS
       request.fields.addAll({
         "name": property.name,
@@ -55,8 +52,6 @@ class PropertyService {
         "is_broker": property.isBroker.toString(),
       });
 
-      request.fields.forEach((k, v) => debugPrint("$k: $v"));
-
       // FACILITIES
       request.fields["facilities"] = jsonEncode(
         property.facilities.map((f) => {"name": f.name}).toList(),
@@ -75,8 +70,6 @@ class PropertyService {
       }
 
       if (videoPath != null && videoPath.isNotEmpty) {
-        debugPrint("VIDEO UPLOAD: $videoPath");
-
         request.files.add(
           await http.MultipartFile.fromPath(
             'video',
@@ -85,14 +78,10 @@ class PropertyService {
         );
       }
 
-      debugPrint("Total Files: ${request.files.length}");
-      debugPrint("REQUEST URL: $url");
-
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       debugPrint("STATUS CODE: ${response.statusCode}");
-      debugPrint("RAW RESPONSE: ${response.body}");
 
       Map<String, dynamic> responseData = {};
 
@@ -104,11 +93,6 @@ class PropertyService {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         debugPrint("PROPERTY CREATED SUCCESSFULLY");
-
-        debugPrint("SENT FILES:");
-        for (final file in request.files) {
-          debugPrint("Field: ${file.field}, File: ${file.filename}");
-        }
       } else {
         debugPrint("REQUEST FAILED");
       }
@@ -205,8 +189,6 @@ class PropertyService {
         property.facilities.map((f) => {"name": f.name}).toList(),
       );
 
-      debugPrint("facilities: ${request.fields["facilities"]}");
-
       for (final path in imagePaths) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -230,7 +212,6 @@ class PropertyService {
       final response = await http.Response.fromStream(streamedResponse);
 
       debugPrint("Status: ${response.statusCode}");
-      debugPrint("Response: ${response.body}");
 
       final resJson = jsonDecode(response.body);
 
@@ -383,7 +364,6 @@ class PropertyService {
       );
 
       debugPrint('Booking response code: ${response.statusCode}');
-      debugPrint('Booking response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -483,7 +463,6 @@ class PropertyService {
       debugPrint("===== AIRBNB BOOKING RESPONSE =====");
       debugPrint("URL: $url");
       debugPrint("Status Code: ${response.statusCode}");
-      debugPrint("Body: ${response.body}");
 
       final data = jsonDecode(response.body);
 
@@ -572,10 +551,7 @@ class PropertyService {
       },
     );
 
-    if (response.statusCode == 200) {
-      debugPrint('Secure toggle success: $propertyId');
-      debugPrint('Response: ${response.body}');
-    } else {
+    if (response.statusCode != 200 || response.statusCode != 201) {
       debugPrint('Failed secure toggle: ${response.statusCode}');
       debugPrint(response.body);
       throw Exception('Failed to toggle secure status');
@@ -586,39 +562,59 @@ class PropertyService {
     String token,
     String propertyId,
     PropertyModel property,
-    List<Map<String, dynamic>> imageList, // Accept Map for filename & data
   ) async {
     final url = Uri.parse(
       '${ApiConstants.uploader}?property_id=$propertyId',
     );
 
-    final body = {
-      'name': property.name,
-      'type': property.type,
-      'category': property.category ?? "",
-      'address': property.address,
-      'price': property.price.toString(),
-      'description': property.description,
-      'is_rent': property.isRent,
-      'facilities': property.facilities.map((f) => f.name).toList(),
-      'images': imageList, // Already in correct format
-    };
-
-    debugPrint("Updating Property ID: $propertyId");
-    debugPrint("Request body: $body");
-
-    final response = await http.put(
+    final request = http.MultipartRequest(
+      'PUT',
       url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(body),
     );
 
-    debugPrint("Update Response Code: ${response.statusCode}");
-    debugPrint("Update Response Body: ${response.body}");
+    // HEADERS
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/json';
+
+    // TEXT FIELDS
+    request.fields['name'] = property.name;
+    request.fields['type'] = property.type;
+    request.fields['category'] = property.category ?? "";
+    request.fields['address'] = property.address;
+    request.fields['price'] = property.price.toString();
+    request.fields['description'] = property.description;
+    request.fields['is_rent'] = property.isRent.toString();
+
+    // FACILITIES
+    for (var facility in property.facilities) {
+      request.fields['facilities'] = facility.name;
+    }
+
+    // IMAGES
+    for (var imgPath in property.images) {
+      // Existing online image
+      if (imgPath.startsWith('http')) {
+        request.fields['existing_images'] = imgPath;
+      }
+
+      // New local image
+      else {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'images',
+            imgPath,
+          ),
+        );
+      }
+    }
+
+    debugPrint("Uploading ${request.files.length} new images");
+
+    final streamedResponse = await request.send();
+
+    final response = await http.Response.fromStream(streamedResponse);
+
+    debugPrint("Response Code: ${response.statusCode}");
 
     return {
       'statusCode': response.statusCode,

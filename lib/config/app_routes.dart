@@ -1,17 +1,17 @@
-import 'package:faramas/screens/generate_payment.dart';
+import 'package:faramas/features/payment/screen/generate_payment.dart';
 import 'package:flutter/material.dart';
-import '../screens/booking_screen.dart';
+import '../features/properties/screens/property_screen.dart';
+import '../features/booking/screens/booking_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/login_screen.dart';
-import '../screens/owner_booking_screen.dart';
-import '../screens/properties_screen.dart';
-import '../screens/registration_screen.dart';
-import '../screens/mobile_signin_screen.dart';
-import '../screens/password_reset_screen.dart';
+import '../features/auth/screens/login_screen.dart';
+import '../features/profile/screens/owner_booking_screen.dart';
+import '../features/auth/screens/registration_screen.dart';
+import '../features/auth/screens/mobile_signin_screen.dart';
+import '../features/auth/screens/password_reset_screen.dart';
 import '../screens/splash_screen.dart';
-import '../screens/subscription_payments_screen.dart';
-import '../screens/payment_history_screen.dart';
-import '../screens/about_app_screen.dart';
+import '../features/payment/screen/subscription_payments_screen.dart';
+import '../features/payment/screen/payment_history_screen.dart';
+import '../features/profile/screens/about_app_screen.dart';
 import '../screens/tour_screen.dart';
 
 class AppRoutes {

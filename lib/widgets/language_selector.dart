@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/language_provider.dart';
 
 class LanguageSelector extends StatelessWidget {
   final bool showLabel;
   final double iconSize;
-  
+
   const LanguageSelector({
     Key? key,
     this.showLabel = false,
@@ -13,13 +14,15 @@ class LanguageSelector extends StatelessWidget {
   }) : super(key: key);
 
   void _showLanguageDialog(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    
+    final languageProvider =
+        Provider.of<LanguageProvider>(context, listen: false);
+    final localizations = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Select Language / Chagua Lugha'),
+          title: Text(localizations.selectLanguage),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -43,7 +46,7 @@ class LanguageSelector extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel / Ghairi'),
+              child: Text(localizations.cancel),
             ),
           ],
         );

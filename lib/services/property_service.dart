@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:faramas/models/booking_model.dart';
@@ -247,6 +249,7 @@ class PropertyService {
       };
     }
   }
+
   // Fetch all properties
 
   static Future<List<PropertyModel>> fetchProperties({
@@ -283,8 +286,19 @@ class PropertyService {
         debugPrint('Failed to fetch properties: HTTP ${response.statusCode}');
         return [];
       }
-    } catch (e) {
-      debugPrint('Exception in fetchProperties: $e');
+    } on SocketException catch (e) {
+      debugPrint('Network error: ${e.message}');
+      return [];
+    } on TimeoutException {
+      debugPrint('Request timeout while fetching properties');
+      return [];
+    } on FormatException catch (e) {
+      debugPrint('Invalid JSON format: $e');
+      return [];
+    } catch (e, stackTrace) {
+      debugPrint(
+        'Unexpected error in fetchProperties: $e\n$stackTrace',
+      );
       return [];
     }
   }
@@ -506,7 +520,6 @@ class PropertyService {
         'data': data,
       };
     } catch (e) {
- 
       debugPrint(e.toString());
 
       return {

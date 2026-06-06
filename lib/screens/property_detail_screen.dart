@@ -878,9 +878,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                           },
                                         ),
                                         ListTile(
-                                          leading: const Icon(
-                                              FontAwesomeIcons.whatsapp,
-                                              color: Colors.green),
+                                          leading: const FaIcon(
+                                            FontAwesomeIcons.whatsapp,
+                                            color: Colors.green,
+                                          ),
                                           title: const Text('WhatsApp Message'),
                                           onTap: () {
                                             Navigator.pop(context);

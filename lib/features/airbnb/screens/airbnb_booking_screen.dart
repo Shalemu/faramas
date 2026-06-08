@@ -1,4 +1,5 @@
 import 'package:faramas/models/user_model.dart';
+import 'package:faramas/services/booking_services.dart';
 import 'package:faramas/services/property_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -330,7 +331,7 @@ class _AirbnbBookingScreenState extends State<AirbnbBookingScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final result = await PropertyService.bookAirbnbProperty(
+      final result = await BookingServices.bookAirbnbProperty(
         token: widget.token,
         propertyId: _property.id!,
         userId: widget.user.id!,

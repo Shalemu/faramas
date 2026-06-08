@@ -1,3 +1,4 @@
+import 'package:faramas/services/booking_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../config/app_colors.dart';
@@ -40,7 +41,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       });
     } else {
       setState(() {
-        _bookingsFuture = PropertyService.fetchMyBookings(
+        _bookingsFuture = BookingServices.fetchMyBookings(
             token: accessToken, userId: user!.id);
       });
     }

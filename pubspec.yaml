@@ -1,7 +1,7 @@
 name: faramas
 description: "A real estate app for Faramas"
 publish_to: "none"
-version: 24.4.4+13
+version: 21.1.1+11
 
 environment:
   sdk: ">=3.2.3 <4.0.0"
@@ -14,7 +14,7 @@ dependencies:
   video_player: ^2.10.0
   cupertino_icons: ^1.0.2
   flutter_svg: ^2.0.9
-  font_awesome_flutter: ^11.0.0
+  font_awesome_flutter: 10.9.1
   package_info_plus: ^8.0.0
   http: ^0.13.6
   provider: ^6.1.2

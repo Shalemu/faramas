@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:faramas/widgets/property_search_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +13,6 @@ import '../models/ad_model.dart';
 import '../models/property_model.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/category_icon.dart';
-import '../widgets/search_dropdown.dart';
 import 'property_detail_screen.dart';
 
 class HomeContentScreen extends StatefulWidget {
@@ -293,24 +293,24 @@ class _HomeContentScreenState extends State<HomeContentScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: SearchDropdown(
-                    controller: _searchController,
-                    onSearchSubmitted: (category, location, type) {
-                      // SEARCH LOGIC
+                  child: Consumer<PropertyProvider>(
+                    builder: (context, provider, _) {
+                      return Column(
+                        children: [
+                          PropertySearchWidget(
+                            onSearch: (search) {
+                              provider.onSearchChanged(search);
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          if (provider.isLoading)
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                        ],
+                      );
                     },
-                    onCategorySelected: (listingType) {
-                      setState(() {
-                        _selectedListingType =
-                            listingType.toLowerCase().replaceAll(
-                                  'for ',
-                                  '',
-                                );
-                      });
-                    },
-                    allProperties: properties,
-                    currentLat: null,
-                    currentLng: null,
-                    selectedCategory: '',
                   ),
                 ),
               ),
@@ -426,13 +426,12 @@ class _HomeContentScreenState extends State<HomeContentScreen>
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(
-          child: Text(
-            'No ads available',
-          ),
+          child: Text('No ads available'),
         ),
       );
     }
 
+    /// CAROUSEL (REAL UI)
     return Container(
       height: 160,
       decoration: BoxDecoration(
@@ -450,6 +449,7 @@ class _HomeContentScreenState extends State<HomeContentScreen>
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
+            /// PAGEVIEW
             AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) {
@@ -465,7 +465,6 @@ class _HomeContentScreenState extends State<HomeContentScreen>
                     },
                     itemBuilder: (context, index) {
                       final ad = _ads[index];
-
                       final imageUrl = '${ApiConstants.baseUrl}${ad.image}';
 
                       return Stack(
@@ -477,15 +476,10 @@ class _HomeContentScreenState extends State<HomeContentScreen>
                             errorBuilder: (_, __, ___) {
                               return Container(
                                 color: Colors.grey.shade300,
-                                child: const Icon(
-                                  Icons.image,
-                                  size: 40,
-                                ),
+                                child: const Icon(Icons.image, size: 40),
                               );
                             },
                           ),
-
-                          /// OVERLAY
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -498,8 +492,6 @@ class _HomeContentScreenState extends State<HomeContentScreen>
                               ),
                             ),
                           ),
-
-                          /// TITLE
                           Positioned(
                             bottom: 14,
                             left: 14,
@@ -527,29 +519,20 @@ class _HomeContentScreenState extends State<HomeContentScreen>
               right: 0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _ads.length,
-                  (index) {
-                    return AnimatedContainer(
-                      duration: const Duration(
-                        milliseconds: 300,
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                      ),
-                      width: _currentAdIndex == index ? 22 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _currentAdIndex == index
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                children: List.generate(_ads.length, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentAdIndex == index ? 22 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentAdIndex == index
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  );
+                }),
               ),
             ),
           ],

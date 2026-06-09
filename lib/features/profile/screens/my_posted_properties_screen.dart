@@ -1,4 +1,5 @@
 import 'package:faramas/screens/upload_screen.dart';
+import 'package:faramas/services/booking_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../config/app_colors.dart';
@@ -166,7 +167,7 @@ void _fetchMyProperties() {
 
 Future<void> _toggleSecureProperty(int propertyId) async {
   try {
-    await PropertyService.toggleSecureProperty(
+    await BookingServices.toggleSecureProperty(
       token: _accessToken!,
       propertyId: propertyId,
     );

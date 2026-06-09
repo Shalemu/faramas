@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:faramas/config/app_routes.dart';
 import 'package:faramas/screens/map_picker.dart';
@@ -161,35 +162,40 @@ class _UploadScreenState extends State<UploadScreen> {
       // Convert selected images to file paths
       final imagePaths = _selectedImages.map((xfile) => xfile.path).toList();
 
-      final result = await service.createProperty(
-        PropertyModel(
-          name: _nameController.text,
-          type: _selectedType,
-          address: _addressController.text,
-          price: double.tryParse(
-                  _priceController.text.replaceAll(',', '').trim()) ??
-              0.0,
-          isRent: _selectedCategory == 'Rent',
-          category: _selectedCategory,
-          description: _descriptionController.text,
-          totalPrice: double.tryParse(
-                  _totalPriceController.text.replaceAll(',', '').trim()) ??
-              0.0,
-          maintenance: 0.0,
-          facilities:
-              _selectedFacilities.map((f) => Facility(name: f)).toList(),
-          latitude: _latitude,
-          longitude: _longitude,
-          region: _currentRegion,
-          district: _currentDistrict,
-        ),
-        token,
-        imagePaths,
-        videoPath: _selectedVideo?.path, // optional video
-      );
+  final result = await service.createProperty(
+  PropertyModel(
+    name: _nameController.text,
+    type: _selectedType,
+    address: _addressController.text,
+    price: double.tryParse(
+            _priceController.text.replaceAll(',', '').trim()) ??
+        0.0,
+    isRent: _selectedCategory == 'Rent',
+    category: _selectedCategory,
+    description: _descriptionController.text,
+    totalPrice: double.tryParse(
+            _totalPriceController.text.replaceAll(',', '').trim()) ??
+        0.0,
+    maintenance: 0.0,
+    facilities:
+    _selectedFacilities.map((f) => Facility(name: f)).toList(),
+    latitude: _latitude,
+    longitude: _longitude,
+    region: _currentRegion,
+    district: _currentDistrict,
+  ),
+  token,
+  imagePaths,
+  videoPath: _selectedVideo?.path,
+);
+
+// PRINT EVERYTHING
+debugPrint("========== UPLOAD RESPONSE ==========");
+debugPrint("Status Code: ${result['statusCode']}");
+debugPrint("Response Data: ${jsonEncode(result['data'])}");
+debugPrint("=====================================");
 
       debugPrint("Raw Upload Property Response: $result");
-
       final statusCode = result['statusCode'];
       final responseData = result['data'] ?? {};
 

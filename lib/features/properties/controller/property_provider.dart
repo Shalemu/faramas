@@ -1,59 +1,101 @@
-import 'package:faramas/features/properties/services/property_service.dart';
-import 'package:flutter/cupertino.dart';
-
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:faramas/services/search_service.dart';
 import '../../../models/property_model.dart';
 
 class PropertyProvider extends ChangeNotifier {
   List<PropertyModel> properties = [];
 
   bool isLoading = false;
+  bool isLoadingMore = false;
   bool hasMore = true;
 
   int currentPage = 1;
 
-  Future<void> refreshProperties() async {
+  String? _search;
 
-    properties.clear();
+  Timer? _debounce;
 
-    currentPage = 1;
+ 
+  void onSearchChanged(String search) {
+    _search = search;
 
-    hasMore = true;
+    // cancel previous timer
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
+    }
 
-    isLoading = false;
-
-    notifyListeners();
-
-    await loadProperties();
+    // start new timer (debounce 500ms)
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      searchProperties(search: search);
+    });
   }
 
-  Future<void> loadProperties() async {
-    if (isLoading || !hasMore) return;
 
-    isLoading = true;
+  Future<void> searchProperties({
+    String? search,
+  }) async {
+    _search = search;
+
+    properties.clear();
+    currentPage = 1;
+    hasMore = true;
+
+    await loadProperties(reset: true);
+  }
+
+ 
+  Future<void> loadProperties({bool reset = false}) async {
+    if (isLoading || isLoadingMore || !hasMore) return;
+
+    if (reset) {
+      isLoading = true;
+    } else {
+      isLoadingMore = true;
+    }
+
     notifyListeners();
 
     try {
-      final response = await PropertyService.fetchProperties(
+      final fetched = await SearchService().searchProperties(
         page: currentPage,
+        search: _search,
       );
 
-      final List<dynamic> results = response['results'] as List<dynamic>;
-      final fetched = results
-          .map(
-            (e) => PropertyModel.fromJson(e),
-          )
-          .toList();
+      if (reset) {
+        properties = fetched;
+      } else {
+        properties.addAll(fetched);
+      }
 
-      properties.addAll(fetched);
+      hasMore = fetched.isNotEmpty;
 
-      hasMore = response['next'] != null;
-
-      currentPage++;
+      if (hasMore) {
+        currentPage++;
+      }
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Load error: $e");
     }
 
     isLoading = false;
+    isLoadingMore = false;
     notifyListeners();
+  }
+
+
+  Future<void> refreshProperties() async {
+    _search = null;
+
+    properties.clear();
+    currentPage = 1;
+    hasMore = true;
+
+    await loadProperties(reset: true);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 }
